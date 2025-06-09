@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Interactive Finger</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body style="background-color: white;">
+    <div id="finger-container">
+        <div id="finger">
+            <div id="dead-skin"></div>
+            <div id="flesh"></div>
+            <div id="blood-container"></div>
+        </div>
+    </div>
+    <style>
+        .hover-button {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background-color: rgba(255, 223, 0, 0.8);
+            color: black;
+            text-decoration: none;
+            border-radius: 4px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .hover-button:hover {
+            opacity: 1;
+        }
+    </style>
+    <a href="mayuchen1.html" class="hover-button">Go</a>
+    <script src="script.js"></script>
+</body>
+</html>

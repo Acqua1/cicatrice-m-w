@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ma Yuchen's Gallery</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: #fff;
+            font-family: Arial, sans-serif;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .image-card {
+            aspect-ratio: 1;
+            width: 100%;
+            height: 0;
+            padding-bottom: 100%;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .image-card .image-wrapper {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .image-card img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        .nav-buttons {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            display: flex;
+            gap: 30px;
+            z-index: 1000;
+        }
+
+        .nav-button {
+            display: inline-block;
+            text-decoration: none;
+            color: #000;
+            font-size: 16px;
+            cursor: pointer;
+            transition: color 0.3s;
+            position: relative;
+            font-weight: 500;
+        }
+
+        .nav-button:hover {
+            color: #666;
+        }
+
+        .nav-button .tooltip {
+            position: absolute;
+            left: 0;
+            top: 100%;
+            background-color: white;
+            color: #000;
+            padding: 12px 16px;
+            border-radius: 4px;
+            font-size: 14px;
+            line-height: 1.6;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+            margin-top: 0;
+            width: max-content;
+            text-align: left;
+
+            z-index: 1001;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .nav-button .tooltip div {
+            margin: 0;
+            cursor: pointer;
+            transition: color 0.3s;
+            position: relative;
+        }
+
+        .nav-button .tooltip div:hover {
+            color: #666;
+        }
+
+        .nav-button .tooltip a {
+            color: inherit;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .intro-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            max-width: 400px;
+            z-index: 1002;
+            display: none;
+            font-size: 1em;
+            line-height: 2.0;
+            letter-spacing: 0.7px;
+            text-align: left;
+        }
+
+        .intro-popup.show {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1001;
+            display: none;
+        }
+
+        .popup-overlay.show {
+            display: block;
+        }
+
+        .instagram-preview {
+            position: absolute;
+            left: 100%;
+            top: 50%;
+            transform: translateY(-50%);
+            margin-left: 10px;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            overflow: hidden;
+        }
+
+        .instagram-preview img {
+            width: 200px;
+            height: 200px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .nav-button .tooltip div:hover .instagram-preview {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .nav-button:hover .tooltip {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .gallery-grid + .gallery-grid {
+            margin-top: 40px; /* Adjust this value as needed */
+        }
+
+        .text-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.95);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            overflow-y: auto;
+            padding-top: 50px;
+        }
+
+        .text-content {
+            max-width: 800px; /* Increased for wider text area */
+            margin: 20px auto; /* auto for horizontal centering if needed */
+            font-size: 1em;
+            line-height: 2.2; /* Increased line height */
+            letter-spacing: 0.5px; /* Optional: adjust if needed */
+            text-align: left;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+            background: transparent; /* Ensure no background color */
+            color: #333; /* Text color */
+        }
+
+        .music-control {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            z-index: 1000;
+            position: relative;
+        }
+
+        .music-control:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .music-control.playing .pause-icon {
+            display: block;
+        }
+
+        .music-control.playing .play-icon {
+            display: none;
+        }
+
+        .music-control .pause-icon {
+            display: none;
+        }
+
+        .music-control .play-icon {
+            display: block;
+        }
+
+        .music-icon {
+            width: 20px;
+            height: 20px;
+            fill: #333;
+            line-height: 1.6;
+            color: #333;
+            white-space: pre-line;
+            transition: all 0.3s ease;
+        }
+
+        .music-note {
+            position: absolute;
+            top: -15px;
+            right: -5px;
+            width: 20px;
+            height: 20px;
+        }
+
+        .note-icon {
+            width: 100%;
+            height: 100%;
+            fill: #333;
+            transform: rotate(45deg);
+            opacity: 0.8;
+        }
+
+        .text-content.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <div class="nav-buttons" style="display: flex; align-items: center;">
+            <a href="#about" class="nav-button">
+            About
+            <div class="tooltip">
+                <div onclick="showIntro('about')">About This Website</div>
+                <div onclick="showIntro('mission')">Our Mission</div>
+            </div>
+            <div id="aboutPopup" class="intro-popup">
+                Welcome to Ahia, a digital archive dedicated to preserving scars. Below, you can contact us to share your photos and stories—whether your scars are physical or emotional.
+            </div>
+            <div id="missionPopup" class="intro-popup">
+                Every scar carries a story. Some speak of pain, others of healing—together, they shape who we are. This website aims to transform fear into empathy, revealing the beauty that can emerge from our wounds.
+            </div>
+            <div class="popup-overlay" onclick="hideIntros()"></div>
+        </a>
+        <a href="#events" class="nav-button">
+            Events
+            <div class="tooltip">
+                <div>Upcoming Events</div>
+                <div>Past Events</div>
+            </div>
+        </a>
+        <div class="nav-button">
+            Contact
+            <div class="tooltip">
+                <div><a href="mailto:ahia1cicatrice@gmail.com">Email: ahia1cicatrice@gmail.com</a></div>
+                <div>
+                    <a href="#">Instagram</a>
+                    <div class="instagram-preview">
+                        <img src="images/mayuchen/ins.jpg" alt="Instagram Preview">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <img src="images/mayuchen/title.png" alt="Title" style="width: 150px; height: auto; margin-left: 50px;">
+    </div>
+
+    <h1>Where Scars Remember</h1>
+    <div class="gallery-grid">
+        <div class="image-card">
+            <div class="image-wrapper">
+                <img src="images/mayuchen/viso.jpg" alt="Viso" class="original">
+                <img src="images/mayuchen/visonew.png" alt="Viso New" class="new" style="opacity: 0;">
+            </div>
+        </div>
+        <div class="image-card">
+            <div class="image-wrapper">
+                <img src="images/mayuchen/pancia.jpg" alt="Pancia" class="original">
+                <img src="images/mayuchen/pancianew.png" alt="Pancia New" class="new" style="opacity: 0;">
+            </div>
+        </div>
+        <div class="image-card">
+            <div class="image-wrapper">
+                <img src="images/mayuchen/polmone.jpg" alt="polmone" class="original">
+                <img src="images/mayuchen/polomonenew.png" alt="Polomone New" class="new" style="opacity: 0;">
+            </div>
+        </div>
+        <div class="image-card">
+            <div class="image-wrapper">
+                <img src="images/mayuchen/braccio.jpg" alt="braccio" class="original">
+                <img src="images/mayuchen/braccionew.png" alt="Braccio New" class="new" style="opacity: 0;">
+            </div>
+        </div>
+    </div>
+
+    <div class="gallery-grid">
+        <div class="image-card">
+            <div class="image-wrapper">
+                <img src="images/mayuchen/iciao2.JPG" alt="iciao2" class="original" id="iciao2-original">
+                <img src="images/mayuchen/manoc.PNG" alt="manoc" class="new" id="iciao2-new" style="opacity: 0;">
+            </div>
+        </div>
+        <div class="image-card">
+            <div class="image-wrapper">
+                <img src="images/mayuchen/duzidoo.JPG" alt="duzidoo" class="original" id="duzidoo-original">
+                <img src="images/mayuchen/vivamo.PNG" alt="vivamo_duzidoo" class="new" id="duzidoo-new" style="opacity: 0;">
+            </div>
+        </div>
+        <div class="image-card">
+            <div class="image-wrapper">
+                <img src="images/mayuchen/shoubibi.JPG" alt="shoubibi" class="original" id="shoubibi-original">
+                <img src="images/mayuchen/vivamo.PNG" alt="vivamo_shoubibi" class="new" id="shoubibi-new" style="opacity: 0;">
+            </div>
+        </div>
+        <div class="image-card">
+            <div class="image-wrapper">
+                <img src="images/mayuchen/viva.PNG" alt="viva" class="original" id="viva-original">
+                <img src="images/mayuchen/vivamo.PNG" alt="vivamo_viva" class="new" id="viva-new" style="opacity: 0;">
+            </div>
+        </div>
+    </div>
+
+    <div class="text-overlay">
+        <div class="text-content"></div>
+    </div>
+
+    <audio id="bgMusic" loop>
+        <source src="audio/background.MP3" type="audio/mpeg">
+    </audio>
+
+    <div class="music-control" onclick="toggleMusic()">
+        <div class="music-note">
+            <svg class="note-icon" viewBox="0 0 24 24">
+                <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+            </svg>
+        </div>
+        <svg class="music-icon play-icon" viewBox="0 0 24 24">
+            <path d="M8 5v14l11-7z"/>
+        </svg>
+        <svg class="music-icon pause-icon" viewBox="0 0 24 24">
+            <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+        </svg>
+    </div>
+
+    <script>
+        let bgMusic = document.getElementById('bgMusic');
+        let musicControl = document.querySelector('.music-control');
+
+        function toggleMusic() {
+            if (bgMusic.paused) {
+                bgMusic.play();
+                musicControl.classList.add('playing');
+            } else {
+                bgMusic.pause();
+                musicControl.classList.remove('playing');
+            }
+        }
+
+        function showIntro(type) {
+            document.querySelectorAll('.intro-popup').forEach(popup => popup.classList.remove('show'));
+            document.getElementById(type + 'Popup').classList.add('show');
+            document.querySelector('.popup-overlay').classList.add('show');
+        }
+
+        function hideIntros() {
+            document.querySelectorAll('.intro-popup').forEach(popup => popup.classList.remove('show'));
+            document.querySelector('.popup-overlay').classList.remove('show');
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const imageCards = document.querySelectorAll('.image-card');
+            const textOverlay = document.querySelector('.text-overlay');
+            const textContent = document.querySelector('.text-content');
+            const texts = {
+                'viso': 'A Summer of Seven Stitches\n\nI was about seven years old when it happened — one of those blazing summer afternoons that seemed to stretch on forever. The sun scorched the pavement outside my grandma\'s house, and everything shimmered in the heat. I was restless and sticky with sweat when a sudden craving struck me: I wanted a popsicle.\n\nThere was a tiny convenience store just next door. I remember the clinking sound of coins in my hand as I dashed out the door, excitement buzzing through me. But in my eager rush, I didn\'t notice the high step at the store\'s entrance. My foot caught, and in an instant, I was falling — the world flipping upside down before I hit the ground hard.\n\nPain exploded across my body. Tears spilled out before I could stop them, and I cried loud and uncontrollably, not from embarrassment, but from the raw, stinging hurt. I don\'t remember the ride to the hospital, only flashes — the bright white of the walls, the sharp, clean smell of disinfectant, and voices muffled by panic.\n\nI ended up with seven stitches. It was my very first time in a hospital, and I had always imagined it as a place of fear, pain, and loneliness. But that day, it wasn\'t any of those things. I only remember my mother\'s arms around me, soft and warm, her voice steady and soothing. In that moment, the pain seemed to shrink, folded inside her embrace.\n\nThat summer day, I learned that hospitals weren\'t so scary after all. Pain wasn\'t something to fear — it was something I could face, especially when I wasn\'t alone. And sometimes, the deepest comfort comes not from avoiding pain, but from being held through it.',
+                'pancia': 'The Bowl of Rice Soup\n\nWhen I was a teenager, I often suffered from stomach pain. At first, I brushed it off—just a few injections at the hospital to ease the discomfort, nothing serious, or so I thought. But gradually, the pain grew worse, especially at night. It became unbearable, a sharp, twisting ache that kept me awake and trembling in bed.\n\nEventually, I went to the hospital for a full examination. The doctor told me it was appendicitis and that I needed immediate surgery. It was the first time in my life walking into an operating room, and I was filled with dread. As soon as I entered, I was asked to remove all my clothes and lie down, completely exposed, on the cold, hard operating table. I took a deep breath, trying to calm the fear rising in my chest.\n\nThe doctor explained I would receive partial anesthesia. As the medication spread slowly through my body, my limbs went numb, but my mind remained clear. A blue curtain was raised in front of me, blocking the view, but I could feel the pressure of the doctor\'s hands moving inside my abdomen, like they were searching for something lost.\n\nThe surgery took about forty minutes. When it was over, the doctor told me there had been a minor gastric perforation, which extended the operation and required a larger incision. I was warned that I wouldn\'t be able to eat anything for a week. During that time, I was sustained solely by IV fluids.\n\nI had always been a bit chubby, but in those days, the weight seemed to fall off rapidly. As a child, I was a picky eater. I disliked apples and thought rice soup was bland, flavorless, and dull.\n\nBut one week later, when I was finally allowed to have liquid food, I held the bowl of rice soup with trembling hands. I took a cautious sip. The warmth spread through me like sunlight, and its faint sweetness moved me to tears. That simple, humble soup—once so easily ignored—had become the most comforting thing I had ever tasted.\n\nA few days later, I was given an apple. I peeled it, took a bite, and was stunned. The crispness, the juice, the delicate sweetness—I couldn\'t believe I had ever disliked it.\n\nIt was in that moment I realized something that has stayed with me ever since: the things we take for granted are often the most precious. We don\'t notice their worth until they\'re gone. Just like the old Chinese saying goes: "What comes easy is often taken lightly."',
+                'polmone': 'A Breath Between Life and Fragility\n\nBack in high school, I lived on campus and spent my days buried in sketchbooks, drawing from morning until night. It was a rhythm I had grown used to, one where I lost track of time in lines and shadows.\n\nOne day, out of nowhere, I felt a sudden, piercing pain in my chest—sharp and suffocating, as if something invisible had clamped down on me. I returned to my dorm, hoping that lying down would help, but the pain only worsened. Midnight came, and it still hadn\'t subsided.\n\nAlarmed, my teacher rushed me to the emergency room. After a whirlwind of tests, the doctor delivered the diagnosis: pneumothorax—a collapsed lung. If the pain persisted or worsened, surgery would be necessary.\n\nI called my parents, voice trembling as I explained everything. After a long, anxious conversation, we agreed to go through with the operation. At that moment, everything around me felt surreal. Putting on the hospital gown, the IV needle pricking into my skin, the plastic wristband wrapped tightly around my arm—it was like slipping into a strange, quiet dream.\n\nThe next day, my parents arrived. My mom and dad each held one of my hands, their palms warm and trembling ever so slightly. They told me everything would be fine, but I could see the worry in their eyes. I bit my lip and blinked hard, determined not to cry. I had to be strong—for them, and for myself.\n\nOn the third day, the operation began. This time, under general anesthesia, I lost consciousness almost instantly. One moment I was looking at the ceiling lights, the next, I was gone—my awareness severed like a thread.\n\nWhen I woke up in the hospital room, it felt like I had been away for centuries. At first, there was no pain—just an eerie sense of disorientation, like I\'d returned from some distant, parallel world. My mind floated, hollow and light, while I stared blankly at the unfamiliar walls.\n\nBut as evening approached, the pain crept in. A dull throbbing spread from the wound, and I realized there was a drainage tube inserted into my chest. I watched blood slowly trickle through it. That image stayed with me.\n\nThe ordeal lasted an entire month. I lay in bed, day after day, feeling my body stitch itself back together while silently enduring the slow, stubborn pain. But during that time, something in me changed.\n\nThat experience left a mark far deeper than the scar on my chest. I began to understand how delicate life truly is. I started to see each breath, each heartbeat, each ordinary moment, as a quiet miracle. We spend so much time chasing things—grades, goals, perfection—but all of it fades in front of the simple truth: life is fragile, and life is precious.\n\nPerhaps we can afford to let go of many things in life. But life and death are never ours to control. As the old saying goes, "Life and death are governed by fate, not by our will."',
+                'braccio': 'A Fall, A Lesson\n\nIn 2024, shortly after arriving in Italy, there was a day when I was rushing to catch a bus. I took a few hurried steps—but in my haste, I tripped and fell hard onto the pavement. It happened so quickly that I didn\'t even have time to process it.\n\nBefore I could lift myself up, several people around me had already rushed over. They gently helped me to my feet, their voices filled with concern: "Are you okay?" "Did you hurt yourself?"\n\nSwallowing the pain, I forced a smile and replied, "I\'m fine."\n\nIt wasn\'t until I got on the bus and finally sat down that I felt a dull sting in my arm. I looked down and saw the skin had been scraped open, with fresh blood slowly seeping out.\n\nIn that quiet moment, I realized something: maybe I had been too anxious. My panic, my rush—it hadn\'t helped me get to the bus any faster. If anything, it had only made things worse.\n\nThat small, seemingly insignificant incident stayed with me. It taught me something simple, yet profound:\n No matter what you\'re facing, don\'t rush.\n Take your time. Stay calm. Go forward steadily.\n\nLiving in Italy has felt much the same. Everything is unfamiliar, everything takes time. It\'s a slow process of adapting, of learning through experience, of growing step by step.\n\nAnd perhaps—just perhaps—this is one of the most important things I\'ve learned while living far from home:\n In life, haste rarely helps. Patience, however, almost always does.'
+,
+                'iciao2': 'Since I can remember, there has been a scar about four centimeters long under my right thumb. But I have no memory of how it came to be—not even the slightest clue. I was even reluctant to let friends see it, fearing they’d notice the ugly scar. What bothers me more is that whenever the weather gets hot or humid, it becomes unbearably itchy, and sometimes I can’t even bend the finger properly.\nOne rainy night after dinner, I asked my mother about the origin of the scar. She told me that when we were traveling during my childhood, I fell and accidentally cut myself on a sharp rock. Due to limited medical conditions at the time, it required seven stitches, leaving behind a deep and unsightly scar. I forced myself to believe that explanation.\nBut after I became an adult, I finally learned the real story. My mother told me that I was born with six fingers. She felt deeply ashamed, and when I was old enough to be given medication, she had the extra finger surgically removed so that I would appear to be a “normal person.” But I never thought there was anything wrong with me. Why didn’t she just tell me the truth? Why bury this secret for 18 years?\nWhat was once a part of my body was taken away from me, as if a piece of jade had been chipped. I no longer feel complete.'
+            };
+
+            imageCards.forEach(card => {
+                const originalImg = card.querySelector('.original');
+                const newImg = card.querySelector('.new');
+                let isOriginal = true;
+
+                card.addEventListener('click', function() {
+                    const imgType = originalImg.alt.toLowerCase();
+                    
+                    if (isOriginal) {
+                        originalImg.style.opacity = '0';
+                        newImg.style.opacity = '1';
+                        if (texts[imgType]) {
+                            textContent.textContent = texts[imgType];
+                            textOverlay.style.display = 'flex';
+                            // 添加一个小延迟以确保过渡效果正常工作
+                            setTimeout(() => {
+                                textContent.classList.add('show');
+                            }, 10);
+                        }
+                    } else {
+                        originalImg.style.opacity = '1';
+                        newImg.style.opacity = '0';
+                        textContent.classList.remove('show');
+                        setTimeout(() => {
+                            textOverlay.style.display = 'none';
+                        }, 500);
+                    }
+                    isOriginal = !isOriginal;
+                });
+            });
+
+            // 点击overlay背景关闭文字
+            textOverlay.addEventListener('click', function(e) {
+                if (e.target === textOverlay) {
+                    textContent.classList.remove('show');
+                    setTimeout(() => {
+                        textOverlay.style.display = 'none';
+                    }, 500);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

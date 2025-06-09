@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户界面</title>
+    <style>
+        body {
+            margin: 0;
+            min-height: 100vh;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: Arial, sans-serif;
+            color: #fff;
+        }
+
+        .navbar {
+            width: 100%;
+            position: absolute;
+            top: 0;
+            right: 0;
+            z-index: 2;
+            padding: 1rem;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .logo img {
+            height: 50px;
+            width: auto;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            margin-right: 2rem;
+            position: relative;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .dropdown-panel {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background-color: rgba(255, 255, 255, 0.5);
+            border-radius: 4px;
+            padding: 1.5rem;
+            width: 300px;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            margin-top: 1rem;
+            backdrop-filter: blur(5px);
+        }
+
+        .nav-links:hover .dropdown-panel {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .menu-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .menu-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .menu-title {
+            color: #000;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .menu-items a {
+            display: block;
+            color: #333;
+            text-decoration: none;
+            padding: 0.3rem 0;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .menu-items a:hover {
+            transform: translateX(5px);
+            color: #000;
+        }
+
+        .menu-items a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 1px;
+            background-color: #000;
+            transition: width 0.3s ease;
+        }
+
+        .menu-items a:hover::after {
+            width: 100%;
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #aboutModal .modal-content,
+        #missionModal .modal-content,
+        #insModal .modal-content {
+            background-color: rgba(255, 255, 255, 0.5);
+        }
+
+
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            max-width: 90%;
+            max-height: 90vh;
+            position: relative;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .text-modal-content {
+            max-width: 600px;
+            line-height: 1.8;
+            color: #000;
+            font-size: 1.1rem;
+            white-space: pre-line;
+            text-align: center;
+        }
+
+        .modal-content img {
+            max-width: 100%;
+            max-height: 90vh;
+            object-fit: contain;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: #666;
+            font-size: 24px;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 10px;
+            transition: color 0.3s ease;
+        }
+
+        .close-modal:hover {
+            color: #000;
+        }
+
+        .nav-menu a {
+            text-decoration: none;
+            color: #fff;
+            font-weight: 500;
+            font-size: 1.1rem;
+            transition: transform 0.3s ease;
+        }
+
+        .nav-menu a:hover {
+            transform: scale(1.1);
+        }
+
+        /* 背景图片容器 */
+        .background-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            background: url('assets/images/background.png') no-repeat center center fixed;
+            background-size: cover;
+        }
+
+        /* 背景遮罩 */
+        .background-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: -1;
+        }
+
+        .content-container {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .title-image {
+            margin: 40px 0;
+            max-width: 100%;
+            height: auto;
+        }
+
+        .avatar-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 30px;
+            padding: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .avatar-card {
+            width: 250px;
+            height: 300px;
+            background: rgba(17, 17, 17, 0.9);
+            border-radius: 15px;
+            overflow: hidden;
+            transition: transform 0.3s ease;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+        }
+
+        .avatar-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.6);
+        }
+
+        .avatar-image {
+            width: 100%;
+            height: 200px;
+            background: rgba(34, 34, 34, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+            color: #444;
+            overflow: hidden;
+        }
+
+        .avatar-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .avatar-info {
+            padding: 15px;
+        }
+
+        .avatar-name {
+            font-size: 1.2em;
+            margin: 0 0 5px 0;
+            color: #fff;
+        }
+
+        .avatar-description {
+            font-size: 0.9em;
+            color: #666;
+            margin: 0;
+        }
+
+        .add-card .avatar-image {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #1a1a1a;
+        }
+
+        .add-icon {
+            font-size: 4em;
+            color: #444;
+            transition: color 0.3s ease;
+        }
+
+        .add-card:hover .add-icon {
+            color: #666;
+        }
+
+        .add-card .avatar-name {
+            text-align: center;
+            color: #666;
+        }
+
+        .add-card .avatar-description {
+            text-align: center;
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: rgba(26, 26, 26, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.5);
+        }
+
+        .close-button {
+            position: absolute;
+            right: 15px;
+            top: 15px;
+            font-size: 24px;
+            color: #666;
+            cursor: pointer;
+            border: none;
+            background: none;
+            padding: 0;
+        }
+
+        .close-button:hover {
+            color: #fff;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #fff;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #333;
+            border-radius: 5px;
+            background: #222;
+            color: #fff;
+            font-size: 16px;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #444;
+        }
+
+        .photo-upload {
+            border: 2px dashed #333;
+            padding: 20px;
+            text-align: center;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+
+        .photo-upload:hover {
+            border-color: #444;
+        }
+
+        .submit-btn {
+            background: #333;
+            color: #fff;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+            transition: background 0.3s ease;
+        }
+
+        .submit-btn:hover {
+            background: #444;
+        }
+
+        #preview-image {
+            max-width: 150px;
+            max-height: 150px;
+            margin-top: 10px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="background-container"></div>
+    <div class="background-overlay"></div>
+    <div class="content-container">
+        <nav class="navbar">
+            <div class="nav-links">
+                <div class="nav-menu">
+                    <a href="#about">About AHIA</a>
+                    <a href="#events">Events</a>
+                    <a href="#contact">Contact</a>
+                </div>
+                <div class="dropdown-panel">
+                    <div class="menu-section">
+                        <div class="menu-title">About AHIA</div>
+                        <div class="menu-items">
+                            <a href="#" onclick="showTextModal(event, 'aboutModal')">About This Website</a>
+                            <a href="#" onclick="showTextModal(event, 'missionModal')">Our Mission</a>
+                        </div>
+                    </div>
+                    <div class="menu-section">
+                        <div class="menu-title">Events</div>
+                        <div class="menu-items">
+                            <a href="#upcoming-events">Upcoming Events</a>
+                            <a href="#past-events">Past Events</a>
+                        </div>
+                    </div>
+                    <div class="menu-section">
+                        <div class="menu-title">Contact</div>
+                        <div class="menu-items">
+                            <a href="contact.html">Contact Information</a>
+                            <a href="mailto:ahia1cicatrice@gmail.com">Email: ahia1cicatrice@gmail.com</a>
+                            <a href="#" onclick="showInsModal(event)">Instagram</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+        <img src="assets/images/title.png" alt="标题" class="title-image">
+        <div class="avatar-grid">
+            <a href="mayuchen1.html" style="text-decoration: none;">
+                <div class="avatar-card">
+                    <div class="avatar-image">
+                        <img src="images/users/mayuchen.jpg" alt="ma yuchen">
+                    </div>
+                    <div class="avatar-info">
+                        <h3 class="avatar-name">ma yuchen</h3>
+                        <p class="avatar-description">Click to view details</p>
+                    </div>
+                </div>
+            </a>
+            <div class="avatar-card add-card" onclick="openModal()">
+                <div class="avatar-image">
+                    <div class="add-icon">+</div>
+                </div>
+                <div class="avatar-info">
+                    <h3 class="avatar-name">Add User</h3>
+                    <p class="avatar-description">Click to add</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Form -->
+        <div class="modal" id="userModal">
+            <div class="modal-content">
+                <button class="close-button" onclick="closeModal()">×</button>
+                <h2 style="color: #fff; margin-top: 0;">Add New User</h2>
+                <form id="userForm" onsubmit="handleSubmit(event)">
+                    <div class="form-group">
+                        <label for="photo">Photo</label>
+                        <div class="photo-upload" onclick="document.getElementById('photoInput').click()">
+                            <input type="file" id="photoInput" accept="image/*" style="display: none" onchange="previewImage(event)">
+                            <div id="upload-text">Click to upload photo</div>
+                            <img id="preview-image" src="#" alt="Preview">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="name">Name</label>
+                        <input type="text" id="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="age">Age</label>
+                        <input type="number" id="age" required min="0" max="120">
+                    </div>
+                    <div class="form-group">
+                        <label for="country">Country</label>
+                        <select id="country" required>
+                            <option value="">Select country</option>
+                            <option value="CN">China</option>
+                            <option value="IT">Italy</option>
+                            <option value="JP">Japan</option>
+                            <option value="US">United States</option>
+                            <option value="GB">United Kingdom</option>
+                            <option value="FR">France</option>
+                            <option value="DE">Germany</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="submit-btn">Submit</button>
+                </form>
+            </div>
+        </div>
+
+        <script>
+            function openModal() {
+                document.getElementById('userModal').style.display = 'flex';
+            }
+
+            function closeModal() {
+                document.getElementById('userModal').style.display = 'none';
+                document.getElementById('userForm').reset();
+                document.getElementById('preview-image').style.display = 'none';
+                document.getElementById('upload-text').style.display = 'block';
+            }
+
+            function previewImage(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const preview = document.getElementById('preview-image');
+                        preview.src = e.target.result;
+                        preview.style.display = 'block';
+                        document.getElementById('upload-text').style.display = 'none';
+                    }
+                    reader.readAsDataURL(file);
+                }
+            }
+
+            function createUserCard(userData, imageUrl) {
+                // Create new user card
+                const cardContainer = document.createElement('a');
+                cardContainer.href = 'mayuchen1.html'; // Link to mayuchen1.html
+                cardContainer.style.textDecoration = 'none';
+                
+                const card = document.createElement('div');
+                card.className = 'avatar-card';
+                
+                const imageDiv = document.createElement('div');
+                imageDiv.className = 'avatar-image';
+                
+                const img = document.createElement('img');
+                img.src = imageUrl;
+                img.alt = userData.name;
+                
+                const infoDiv = document.createElement('div');
+                infoDiv.className = 'avatar-info';
+                
+                const name = document.createElement('h3');
+                name.className = 'avatar-name';
+                name.textContent = userData.name;
+                
+                const description = document.createElement('p');
+                description.className = 'avatar-description';
+                description.textContent = `Age: ${userData.age} | ${getCountryName(userData.country)}`;
+                
+                // Assemble the card
+                imageDiv.appendChild(img);
+                infoDiv.appendChild(name);
+                infoDiv.appendChild(description);
+                card.appendChild(imageDiv);
+                card.appendChild(infoDiv);
+                cardContainer.appendChild(card);
+                
+                return cardContainer;
+            }
+
+            function getCountryName(code) {
+                const countries = {
+                    'CN': 'China',
+                    'IT': 'Italy',
+                    'JP': 'Japan',
+                    'US': 'United States',
+                    'GB': 'United Kingdom',
+                    'FR': 'France',
+                    'DE': 'Germany'
+                };
+                return countries[code] || code;
+            }
+
+            function handleSubmit(event) {
+                event.preventDefault();
+                
+                const formData = {
+                    name: document.getElementById('name').value,
+                    age: document.getElementById('age').value,
+                    country: document.getElementById('country').value,
+                    photo: document.getElementById('photoInput').files[0]
+                };
+
+                // Create URL for the uploaded image
+                const imageUrl = URL.createObjectURL(formData.photo);
+                
+                // Create new user card
+                const newCard = createUserCard(formData, imageUrl);
+                
+                // Insert the new card before the add button
+                const addCard = document.querySelector('.add-card');
+                addCard.parentNode.insertBefore(newCard, addCard);
+                
+                // Close the modal and show success message
+                closeModal();
+                alert('User information submitted successfully!');
+            }
+
+            // Close modal when clicking outside
+            window.onclick = function(event) {
+                const modal = document.getElementById('userModal');
+                if (event.target === modal) {
+                    closeModal();
+                }
+            }
+        </script>
+    </div>
+
+    <!-- About Modal -->
+    <div class="modal" id="aboutModal">
+        <div class="modal-content text-modal-content">
+            <button class="close-modal" onclick="closeModal('aboutModal')">&times;</button>
+            <div>Welcome to Ahia, a digital archive dedicated to preserving scars.
+Below, you can contact us to share your photos and stories—whether your scars are physical or emotional.</div>
+        </div>
+    </div>
+
+    <!-- Mission Modal -->
+    <div class="modal" id="missionModal">
+        <div class="modal-content text-modal-content">
+            <button class="close-modal" onclick="closeModal('missionModal')">&times;</button>
+            <div>Every scar carries a story.
+Some speak of pain, others of healing—together, they shape who we are.
+This website aims to transform fear into empathy, revealing the beauty that can emerge from our wounds.</div>
+        </div>
+    </div>
+
+    <!-- Instagram Modal -->
+    <div class="modal" id="insModal">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeModal('insModal')">&times;</button>
+            <img src="images/users/ins.jpg" alt="Instagram QR Code">
+        </div>
+    </div>
+
+    <script>
+        function showTextModal(event, modalId) {
+            event.preventDefault();
+            document.getElementById(modalId).classList.add('active');
+        }
+
+        function showInsModal(event) {
+            event.preventDefault();
+            document.getElementById('insModal').classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        // 为所有模态框添加点击外部关闭事件
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', function(event) {
+                if (event.target === this) {
+                    closeModal(this.id);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
